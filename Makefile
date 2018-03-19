@@ -38,6 +38,7 @@ clean:
 	rm -vrf *.mod *.o
 	rm -vrf *~
 	rm -vrf $(SOURCE_DIR)/*.mod
+	rm -vrf fort.*
 
 $(OBJECTS_DIR)/modules.o: modules.F90 $(LIB)
 	$(FC) $(CFLAGS) $< -J $(SOURCE_DIR) -c -o $@
