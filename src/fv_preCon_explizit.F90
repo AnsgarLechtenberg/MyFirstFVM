@@ -53,7 +53,7 @@ program fv_preCon_explizit
          inner = inner + 1
          error = 0.0
 
-         call reconQ(Q,Q_recon,nx,3)
+         call reconQ(Q,Q_recon,nx,3,minmod)
          call calcFlux(Q_recon,nx,kappa,R,F,llf)
 
          do i=2,nx-1 ! Schleife über Zellen

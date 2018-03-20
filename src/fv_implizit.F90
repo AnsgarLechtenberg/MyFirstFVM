@@ -15,7 +15,7 @@ program fv_implizit
 
    ! Konstanten setzen
    cfl = 0.5
-   no = 160
+   no = 200
    nx = 501
 
    allocate(ipiv(3*nx))
@@ -61,7 +61,7 @@ program fv_implizit
       LHS_imp(3*nx-1,3*nx-4) = -1.0
       LHS_imp(3*nx-2,3*nx-5) = -1.0
 
-      call reconQ(Q,Q_recon,nx,3)
+      call reconQ(Q,Q_recon,nx,3,charm)
       call calcFlux(Q_recon,nx,kappa,R,F,AUSM)
       
       do i=2,nx-1 ! Schleife über Zellen
@@ -76,7 +76,7 @@ program fv_implizit
          LHS_imp((i-1)*3+3,(i-1)*3+3) = +1.0/dt
 
          call calcJacobiKonv(Q(i-1,:),kappa,A_w)
-         call calcJacobiKonv(Q(i,:),kappa,A_e)
+         call calcJacobiKonv(Q(i+1,:),kappa,A_e)
 
          LHS_imp((i-1)*3+1:(i-1)*3+3,(i-2)*3+1:(i-2)*3+3) = -A_w/dx/1d0
          LHS_imp((i-1)*3+1:(i-1)*3+3,(i)*3+1:(i)*3+3) = A_e/dx/1d0

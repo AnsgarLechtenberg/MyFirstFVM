@@ -81,7 +81,7 @@ program fv_preCon_implizit
          LHS_imp(3*nx-1,3*nx-4) = -1.0
          LHS_imp(3*nx-2,3*nx-5) = -1.0
 
-         call reconQ(Q,Q_recon,nx,3)
+         call reconQ(Q,Q_recon,nx,3,minmod)
          call calcFlux(Q_recon,nx,kappa,R,F,llf)
 
          do i=2,nx-1 ! Schleife über Zellen

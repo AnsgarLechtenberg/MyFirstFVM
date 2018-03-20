@@ -31,8 +31,8 @@ program fv_explizit
       Q_old = Q
       dt = dx*cfl/sqrt(kappa*R*minval(Z(:,3))) ! Zeitschritt
 
-      call reconQ(Q,Q_recon,nx,3)
-      call calcFlux(Q_recon,nx,kappa,R,F,LLF)
+      call reconQ(Q,Q_recon,nx,3,charm)
+      call calcFlux(Q_recon,nx,kappa,R,F,AUSM)
 
       do i=2,nx-1
          RHS = dt/dx*(F(i-1,:)-F(i,:))

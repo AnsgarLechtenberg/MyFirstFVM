@@ -34,6 +34,7 @@ end module
 module limKonstants
    implicit none
 
+   integer,parameter :: noLim = 0
    integer,parameter :: minmod = 1
    integer,parameter :: superbee = 2
    integer,parameter :: vanLeer = 3
@@ -223,13 +224,14 @@ module routines
 
    end subroutine
 
-   subroutine reconQ(Q,Q_recon,nx,ord)
+   subroutine reconQ(Q,Q_recon,nx,ord,lim)
       implicit none
 
       real(kind=8),dimension(nx,3),intent(in) :: Q
       real(kind=8),dimension(2,nx-1,3),intent(out) :: Q_recon ! 1=L,2=R;nx-1;3
       integer,intent(in) :: nx
       integer,intent(in) :: ord
+      integer,intent(in) :: lim
 
       ! Lokale Variablen
       integer :: i
@@ -239,23 +241,24 @@ module routines
 
       ! Linke Werte
       do i=2,nx-1
-         call reconQL(Q(i-1:i+1,:),Q_recon(1,i,:),ord)
+         call reconQL(Q(i-1:i+1,:),Q_recon(1,i,:),ord,lim)
       end do
 
       ! Rechte Werte
       do i=1,nx-2
-         call reconQR(Q(i:i+2,:),Q_recon(2,i,:),ord)
+         call reconQR(Q(i:i+2,:),Q_recon(2,i,:),ord,lim)
       end do
 
    end subroutine
 
-   subroutine reconQR(Q,QR,ord_in) !MUSCL?
+   subroutine reconQR(Q,QR,ord_in,lim) !MUSCL?
       use limKonstants
       implicit none
 
       real(kind=8),dimension(3,3),intent(in) :: Q
       real(kind=8),dimension(3),intent(out) :: QR
       integer,intent(in) :: ord_in
+      integer,intent(in) :: lim
 
       ! Lokale Variablen
       integer :: i,ord
@@ -289,19 +292,20 @@ module routines
                r(i) = (q(3,i)-q(2,i))/(q(2,i)-q(1,i))
             end if
          end do
-         call limiter(r,phi,minmod)
+         call limiter(r,phi,lim)
          QR = Q(2,:) - 0.5d0*phi*beta*(Q(3,:) - Q(2,:))
       end if
 
    end subroutine
 
-   subroutine reconQL(Q,QL,ord_in) !MUSCL?
+   subroutine reconQL(Q,QL,ord_in,lim) !MUSCL?
       use limKonstants
       implicit none
 
       real(kind=8),dimension(3,3),intent(in) :: Q
       real(kind=8),dimension(3),intent(out) :: QL
       integer,intent(in) :: ord_in
+      integer,intent(in) :: lim
 
       ! Lokale Variablen
       integer :: i,ord
@@ -335,7 +339,7 @@ module routines
                r(i) = (q(2,i)-q(1,i))/(q(3,i)-q(2,i))
             end if
          end do
-         call limiter(r,phi,minmod)
+         call limiter(r,phi,lim)
          QL = Q(2,:) + 0.5d0*beta*phi*(Q(2,:) - Q(1,:))
       end if
 
@@ -823,54 +827,23 @@ module routines
       eps = min(1d0,eps_inv) !min(1d0,max(eps_inv,eps_dt,eps_vis))
    end subroutine
 
-   !subroutine limiter(Q,phi,which)
-   !subroutine limiter(Q,lim,which,dir)
-   subroutine limiter(r,phi,which)
+   subroutine limiter(r,phi,lim)
       use limKonstants
       implicit none
 
-      !real(kind=8),dimension(3,3),intent(in) :: Q
-      real(kind=8),dimension(3),intent(out) :: phi
       real(kind=8),dimension(3),intent(in) :: r
-      !real(kind=8),intent(out) :: lim
-      integer,intent(in) :: which
-      !integer,intent(in) :: dir
+      real(kind=8),dimension(3),intent(out) :: phi
+      integer,intent(in) :: lim
 
-      !Lokale Variablen
-      !integer :: i
-      !real(kind=8),dimension(3) :: phi
-
-      !if (Q(3,1)-Q(2,1) == 0) then
-         !r(1) = 1d10
-      !else
-         !r(1) = (Q(2,1)-Q(1,1))/(Q(3,1)-Q(2,1))
-      !end if
-      !if (Q(3,2)-Q(2,2) == 0) then
-         !r(2) = 1d10
-      !else
-         !r(2) = (Q(2,2)-Q(1,2))/(Q(3,2)-Q(2,2))
-      !end if
-      !if (Q(3,3)-Q(2,3) == 0) then
-         !r(3) = 1d10
-      !else
-         !r(3) = (Q(2,3)-Q(1,3))/(Q(3,3)-Q(2,3))
-      !end if
-      !if (dir == 1) then
-         !do i=1,3
-            !if (r(i) == 0) then
-               !r(i) = 1d10
-            !else
-               !r(i) = 1d0/r(i)
-            !end if
-         !end do
-      !end if
-      if (which == minmod) then
+      if (lim == noLim) then
+         phi = 1d0
+      else if (lim == minmod) then
          phi = max(0d0,min(1d0,r))
-      else if (which == superbee) then
+      else if (lim == superbee) then
          phi = max(0d0,min(2.0*r,1d0),min(r,2d0))
-      else if (which == vanLeer) then
+      else if (lim == vanLeer) then
          phi = (r + abs(r))/(1d0 + abs(r))
-      else if (which == charm) then
+      else if (lim == charm) then
          if (minval(r)>0) then
             phi = (r*(3d0*r+1d0))/(r+1d0)**2
          else
@@ -880,9 +853,6 @@ module routines
          write(*,*) "Limiter nicht erkannt, STOP"
          stop 1
       end if
-
-      !phi = minval(phi)
-      !lim = minval(phi)
 
    end subroutine
 
