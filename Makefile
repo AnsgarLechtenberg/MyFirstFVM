@@ -33,12 +33,12 @@ FORCE:
 .SILENT: clean parallel FORCE
 
 clean:
-	rm -rvf $(EXECUTABLE_DIR)
-	rm -rvf $(OBJECTS_DIR)
-	rm -vrf *.mod *.o
-	rm -vrf *~
-	rm -vrf $(SOURCE_DIR)/*.mod
-	rm -vrf fort.*
+	@rm -rvf $(EXECUTABLE_DIR)
+	@rm -rvf $(OBJECTS_DIR)
+	@rm -vrf *.mod *.o
+	@rm -vrf *~
+	@rm -vrf $(SOURCE_DIR)/*.mod
+	@rm -vrf fort.*
 
 $(OBJECTS_DIR)/modules.o: modules.F90 $(LIB)
 	$(FC) $(CFLAGS) $< -J $(SOURCE_DIR) -c -o $@
